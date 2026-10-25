@@ -93,7 +93,7 @@ def list_my_lots(
     "/lots",
     response_model=PrivateLotEnvelope,
     status_code=status.HTTP_201_CREATED,
-    summary="Criar lote a partir de uma obra validada no backend",
+    summary="Criar lote a partir de uma obra validada",
 )
 def create_lot(
     payload: CreateLotRequest,

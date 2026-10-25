@@ -30,7 +30,6 @@ def bearer_token(request: Request) -> str | None:
 
 
 def optional_auth(request: Request, session: SessionDep) -> tuple[User, AccessToken] | None:
-    """Bearer opcional (sala pública). Token inválido é simplesmente ignorado."""
     token = None
     try:
         token = bearer_token(request)
@@ -105,17 +104,12 @@ def _limiter(session: Session):
 
             client = Redis.from_url(settings.redis_url, socket_connect_timeout=1, socket_timeout=1)
             return RedisRateLimiter(client)
-        except Exception:  # pragma: no cover
+        except Exception:
             return DatabaseRateLimiter(session)
     return DatabaseRateLimiter(session)
 
 
 def rate_limit(bucket: str, limit_attr: str, window_seconds: int, *, per_user: str | None = None):
-    """Fábrica de dependência de rate limiting.
-
-    Uso: ``dependencies=[Depends(rate_limit("login", "rate_limit_login_per_minute", 60))]``.
-    """
-
     def dependency(request: Request, session: SessionDep) -> None:
         if not settings.rate_limit_enabled:
             return
@@ -154,5 +148,5 @@ def safe_search_term(q: str | None = Query(None, max_length=100)) -> str | None:
 SearchTerm = Annotated[str | None, Depends(safe_search_term)]
 
 
-def session_iter() -> Iterator[Session]:  # pragma: no cover - utilitário
+def session_iter() -> Iterator[Session]:
     yield from get_session()

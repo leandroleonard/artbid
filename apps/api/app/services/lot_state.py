@@ -15,12 +15,6 @@ PUBLIC_STATUSES = ("scheduled", "live", "ended")
 
 
 def effective_status(lot: Lot, now: datetime | None = None) -> str:
-    """Estado oficial derivado do estado persistido e do relógio do servidor.
-
-    O browser nunca fornece estado. ``cancelled`` ganha sempre; ``closed_at``
-    (encerrado/liquidado) também. Caso contrário o estado é derivado da janela
-    oficial [startsAt, endsAt).
-    """
     now = now or utcnow()
     if lot.cancelled_at is not None or lot.status == "cancelled":
         return "cancelled"
@@ -44,7 +38,6 @@ def next_minimum_bid_cents(lot: Lot) -> int:
 
 
 def public_lot_payload(lot: Lot, now: datetime | None = None) -> dict[str, Any]:
-    """Modelo público ``Lot`` do contrato (§3.1)."""
     status = effective_status(lot, now)
     return {
         "id": lot.public_id,
@@ -74,7 +67,6 @@ def private_lot_payload(
     winner_alias: str | None = None,
     now: datetime | None = None,
 ) -> dict[str, Any]:
-    """Modelo privado do leiloeiro: acrescenta cancelamento, resultado e receita."""
     payload = public_lot_payload(lot, now)
     payload.update(
         {
@@ -89,7 +81,6 @@ def private_lot_payload(
 
 
 def room_snapshot(lot: Lot, now: datetime | None = None) -> dict[str, Any]:
-    """Payload do evento ``lot.state.changed`` (snapshot público mínimo)."""
     return {
         "status": effective_status(lot, now),
         "currentBidCents": lot.current_bid_cents,
@@ -104,7 +95,6 @@ def lot_by_public_id(session: Session, public_id: str) -> Lot | None:
 
 
 def get_lot_for_update(session: Session, public_id: str) -> Lot | None:
-    """Bloqueio de linha do lote dentro da transacção corrente."""
     return session.scalar(
         select(Lot).where(Lot.public_id == public_id).with_for_update()
     )

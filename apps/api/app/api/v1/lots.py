@@ -24,7 +24,7 @@ from app.services.lot_state import public_lot_payload, room_snapshot
 router = APIRouter(prefix="/lots", tags=["catalog"])
 
 
-@router.get("", response_model=LotPage, summary="Listar lotes públicos")
+@router.get("", response_model=LotPage, summary="Listar lotes")
 def list_lots(
     session: SessionDep,
     paging: PaginationDep,
@@ -47,13 +47,13 @@ def list_lots(
     }
 
 
-@router.get("/{lot_id}", response_model=LotEnvelope, summary="Detalhe público de um lote")
+@router.get("/{lot_id}", response_model=LotEnvelope, summary="Detalhe de um lote")
 def get_lot(lot_id: str, session: SessionDep) -> dict:
     lot = lot_service.get_public_lot(session, lot_id)
     return {"data": public_lot_payload(lot)}
 
 
-@router.get("/{lot_id}/room", response_model=RoomEnvelope, summary="Sala do leilão (Bearer opcional)")
+@router.get("/{lot_id}/room", response_model=RoomEnvelope, summary="Sala do leilão")
 def get_room(lot_id: str, session: SessionDep, auth: OptionalUser = None) -> dict:
     lot = lot_service.get_public_lot(session, lot_id)
     user = auth[0] if auth else None
@@ -73,7 +73,6 @@ def sse_frame(event_id: str, event_type: str, payload: dict) -> str:
 
 
 def event_is_visible(message: dict, *, lot_public_id: str, viewer_user_id: int | None) -> bool:
-    """Filtro de privacidade do stream: eventos privados só para o licitante alvo."""
     if message.get("lotId") != lot_public_id:
         return False
     if message.get("_visibility") != "private":
@@ -82,7 +81,6 @@ def event_is_visible(message: dict, *, lot_public_id: str, viewer_user_id: int |
 
 
 def _stream_context(lot_id: str) -> tuple[dict, int]:
-    """Lê o snapshot inicial numa sessão curta (nunca mantém sessão aberta no stream)."""
     with SessionLocal() as probe:
         lot = lot_service.get_public_lot(probe, lot_id)
         snapshot = room_snapshot(lot)
@@ -117,8 +115,6 @@ async def lot_events(lot_id: str, request: Request, auth: OptionalUser = None) -
         heartbeat = settings.sse_heartbeat_seconds
         deadline = utcnow() + timedelta(seconds=settings.sse_max_duration_seconds)
         try:
-            # Sem replay por Last-Event-ID: enviamos um snapshot para o cliente revalidar
-            # via REST (limitação documentada em docs/decisions.md #11).
             snapshot_id = iso_utc(utcnow())
             yield sse_frame(
                 f"snap-{snapshot_id}",
@@ -160,7 +156,7 @@ async def lot_events(lot_id: str, request: Request, auth: OptionalUser = None) -
                         str(payload.get("type", "message")),
                         payload,
                     )
-        except asyncio.CancelledError:  # cliente terminou a ligação
+        except asyncio.CancelledError: 
             raise
         finally:
             await connection_limiter.release(identity)
