@@ -55,9 +55,9 @@ DEFAULT_MESSAGES = {
     ErrorCode.IDEMPOTENCY_CONFLICT: "A chave de idempotência já foi usada com um pedido diferente.",
     ErrorCode.IDEMPOTENCY_IN_PROGRESS: "O pedido com esta chave está em processamento.",
     ErrorCode.RATE_LIMITED: "Demasiados pedidos. Tente novamente mais tarde.",
-    ErrorCode.UPSTREAM_TIMEOUT: "O serviço externo não respondeu a tempo.",
-    ErrorCode.UPSTREAM_INVALID_RESPONSE: "O serviço externo devolveu uma resposta inválida.",
-    ErrorCode.UPSTREAM_UNAVAILABLE: "O serviço externo está indisponível.",
+    ErrorCode.UPSTREAM_TIMEOUT: "O serviço não respondeu a tempo.",
+    ErrorCode.UPSTREAM_INVALID_RESPONSE: "O serviço devolveu uma resposta inválida.",
+    ErrorCode.UPSTREAM_UNAVAILABLE: "O serviço está indisponível.",
     ErrorCode.BACKEND_NOT_INTEGRATED: "Funcionalidade indisponível",
     ErrorCode.INTERNAL_ERROR: "Não foi possível concluir o pedido.",
 }
