@@ -24,7 +24,7 @@ from app.services.idempotency import execute_idempotent
 router = APIRouter(tags=["bidder"])
 
 
-@router.get("/me/wallet", response_model=WalletEnvelope, summary="Saldo oficial da carteira simulada")
+@router.get("/me/wallet", response_model=WalletEnvelope, summary="Saldo da carteira")
 def get_wallet(user: BidderUser, session: SessionDep) -> dict:
     wallet = wallet_service.get_or_create_wallet(session, user)
     session.commit()
@@ -36,7 +36,7 @@ def get_wallet(user: BidderUser, session: SessionDep) -> dict:
     response_model=DepositEnvelope,
     status_code=status.HTTP_201_CREATED,
     dependencies=[Depends(rate_limit("deposit", "rate_limit_deposit_per_minute", 60, per_user="user"))],
-    summary="Adicionar créditos simulados (não é pagamento real)",
+    summary="Adicionar créditos",
 )
 def create_deposit(
     payload: DepositRequest,

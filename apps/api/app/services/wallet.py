@@ -12,7 +12,7 @@ from app.core.ids import iso_utc, new_public_id, utcnow
 from app.models import User, Wallet, WalletMovement
 
 MOVEMENT_LABELS = {
-    "deposit": "Depósito simulado de créditos",
+    "deposit": "Depósito de créditos",
     "hold": "Reserva de saldo para lance líder",
     "release": "Libertação de saldo reservado",
     "settlement": "Liquidação de lote arrematado",
@@ -140,7 +140,7 @@ def ensure_max_total(user_wallet: Wallet, amount_cents: int) -> None:
     if user_wallet.total_cents + amount_cents > settings.wallet_max_total_cents:
         raise validation(
             "O saldo total excederia o limite máximo permitido.",
-            {"amountCents": ["Limite de saldo simulado excedido."]},
+            {"amountCents": ["Limite de saldo excedido."]},
         )
 
 

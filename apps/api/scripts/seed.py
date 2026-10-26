@@ -99,7 +99,7 @@ def _deposit(session, user: User, amount: int) -> None:
         type="deposit",
         amount_cents=delta,
         total_delta_cents=delta,
-        description="Depósito simulado de créditos",
+        description="Depósito de créditos",
         user_id=user.id,
     )
 
