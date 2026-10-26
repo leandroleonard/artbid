@@ -20,7 +20,6 @@ type AuthContextValue = {
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 const logoutSchema = z.object({ data: z.object({ revoked: z.boolean() }) })
-const configSchema = z.object({ data: z.object({ demo: z.boolean() }) })
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
