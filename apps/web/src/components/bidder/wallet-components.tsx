@@ -10,7 +10,7 @@ export function BalanceCards() {
   if (wallet.isLoading) return <LoadingState label="A consultar o saldo"/>
   if (wallet.isError || !wallet.data) return <ErrorState message={getErrorMessage(wallet.error)} onRetry={() => void wallet.refetch()}/>
   const data = wallet.data.data
-  return <><div className="balance-grid"><div className="balance primary"><span>Saldo total</span><strong>{formatMoney(data.totalCents)}</strong><small>Créditos</small></div><div className="balance"><span>Comprometido</span><strong>{formatMoney(data.committedCents)}</strong><small>Reservado em lances líderes</small></div><div className="balance"><span>Disponível</span><strong>{formatMoney(data.availableCents)}</strong><small>Para novos lances</small></div></div><p className="field-help">Estado oficial em {formatDateTime(data.asOf)}. Nenhuma alteração optimista é aplicada no browser.</p></>
+  return <><div className="balance-grid"><div className="balance primary"><span>Saldo total</span><strong>{formatMoney(data.totalCents)}</strong><small>Créditos</small></div><div className="balance"><span>Comprometido</span><strong>{formatMoney(data.committedCents)}</strong><small>Reservado em lances líderes</small></div><div className="balance"><span>Disponível</span><strong>{formatMoney(data.availableCents)}</strong><small>Para novos lances</small></div></div><p className="field-help">Estado oficial em {formatDateTime(data.asOf)}.</p></>
 }
 
 export function MovementsList({ page = 1, onPage, compact = false }: { page?: number; onPage?: (page: number) => void; compact?: boolean }) {
