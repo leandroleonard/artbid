@@ -3,8 +3,6 @@ import { bearerToken, sessionToken, validateToken } from '@/server/auth'
 import { backendFetch } from '@/server/backend'
 import { BffError, handleRouteError, parseInput } from '@/server/http'
 
-export const runtime = 'nodejs'
-export const dynamic = 'force-dynamic'
 export const maxDuration = 300
 
 function eventHeaders() {
