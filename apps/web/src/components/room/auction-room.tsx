@@ -21,7 +21,7 @@ import { queryKeys } from '@/lib/api/query-keys'
 import { centsToInput, formatMoney, formatTime, parseMoneyToCents } from '@/lib/format'
 
 function ConnectionBadge({ status }: { status: ConnectionStatus }) {
-  const content = status === 'connected' ? ['Ligado', 'wifi'] as const : status === 'reconnecting' ? ['A reconectar', 'refresh'] as const : ['Ligação indisponível · polling', 'wifiOff'] as const
+  const content = status === 'connected' ? ['Live', 'wifi'] as const : status === 'reconnecting' ? ['A reconectar', 'refresh'] as const : ['Ligação indisponível', 'wifiOff'] as const
   return <span className={`connection ${status}`} role="status"><Icon name={content[1]} size={14} />{content[0]}</span>
 }
 
