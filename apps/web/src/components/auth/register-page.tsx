@@ -74,7 +74,7 @@ export function RegisterPage() {
 
       <div className="auth-form-wrap">
         <div className="auth-form">
-          <Link className="brand" href="/" aria-label="ArtBid, início" onClick={() => setOpen(false)}><span className="brand-mark" style={{fontSize: 56, width: 64, height: 64, marginBottom: 25}}>A</span></Link>
+          <Link className="brand" href="/" aria-label="ArtBid, início"><span className="brand-mark" style={{fontSize: 56, width: 64, height: 64, marginBottom: 25}}>A</span></Link>
           <p className="kicker">Nova conta</p>
           <h1>Criar conta</h1>
           <p className="page-subtitle">

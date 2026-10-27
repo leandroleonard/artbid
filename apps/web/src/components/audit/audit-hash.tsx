@@ -55,7 +55,7 @@ export function AuditHash({ hash, label = 'Hash reportado' }: Props) {
             onClick={copyFull}
             aria-label="Copiar hash completo"
           >
-            <Icon name="copy" size={14} /> Copiar hash completo
+            <Icon name="file" size={14} /> Copiar hash completo
           </button>
           <button
             type="button"
@@ -63,7 +63,7 @@ export function AuditHash({ hash, label = 'Hash reportado' }: Props) {
             onClick={copyShort}
             aria-label="Copiar hash resumido"
           >
-            <Icon name="copy" size={14} /> Copiar hash resumido
+            <Icon name="file" size={14} /> Copiar hash resumido
           </button>
           <button
             type="button"

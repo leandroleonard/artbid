@@ -68,7 +68,7 @@ export function LoginPage() {
 
       <div className="auth-form-wrap">
         <div className="auth-form">
-          <Link className="brand" href="/" aria-label="ArtBid, início" onClick={() => setOpen(false)}><span className="brand-mark" style={{fontSize: 56, width: 64, height: 64, marginBottom: 25}}>A</span></Link>
+          <Link className="brand" href="/" aria-label="ArtBid, início"><span className="brand-mark" style={{fontSize: 56, width: 64, height: 64, marginBottom: 25}}>A</span></Link>
           <p className="kicker">Bem-vindo de volta</p>
           <h1>Iniciar sessão</h1>
           <p className="page-subtitle">Aceda à área correspondente ao seu perfil.</p>
