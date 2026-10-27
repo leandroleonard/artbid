@@ -48,15 +48,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const controller = new AbortController()
-    apiFetch('/api/auth/session', sessionResponseSchema, { signal: controller.signal, timeoutMs: 8_000 })
+    let active = true
+
+    apiFetch('/api/auth/session', sessionResponseSchema, {
+      signal: controller.signal,
+      timeoutMs: 8_000,
+    })
       .then((response) => {
+        if (!active) return
+
         setUser(response.data.user)
         setToken(response.data.accessToken)
         setExpiresAt(response.data.expiresAt)
       })
-      .catch(() => resetAuth())
-      .finally(() => setIsLoading(false))
-    return () => controller.abort()
+      .catch(() => {
+        if (!active) return
+
+        resetAuth()
+      })
+      .finally(() => {
+        if (!active) return
+
+        setIsLoading(false)
+      })
+
+    return () => {
+      active = false
+      controller.abort()
+    }
   }, [resetAuth])
 
   useEffect(() => {
