@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import html
 import logging
+import random
 import re
 from dataclasses import dataclass
 from typing import Any
@@ -16,7 +17,13 @@ logger = logging.getLogger(__name__)
 ARTWORK_ID_RE = re.compile(r"^aic_(\d{1,10})$")
 SOURCE_LABEL = "Art Institute of Chicago"
 DEFAULT_IMAGE = "/images/art-hero.jpg"
+LOCAL_IIIF_BASE_URL = "https://iiif.img.default.onaka.ao/img"
+LOCAL_IIIF_MAX_ID = 8_774
 TAG_RE = re.compile(r"<[^>]+>")
+
+
+def random_local_image_id() -> int:
+    return random.randint(1, LOCAL_IIIF_MAX_ID)
 
 
 class ArtworkNotFound(AppError):
@@ -82,12 +89,9 @@ def strip_html(value: str | None, limit: int = 1200) -> str | None:
 
 
 def iiif_image_url(image_id: str | None, config: dict[str, Any] | None) -> str:
-    base = (config or {}).get("iiif_url") or "https://www.artic.edu/iiif/2"
-    if not image_id:
-        return DEFAULT_IMAGE
-    if not re.match(r"^[A-Za-z0-9\-_/.]{1,120}$", image_id):
-        return DEFAULT_IMAGE
-    return f"{base.rstrip('/')}/{image_id}/full/843,/0/default.jpg"
+    _ = image_id, config
+    image_number = random_local_image_id()
+    return f"{LOCAL_IIIF_BASE_URL.rstrip('/')}/{image_number}"
 
 
 def normalize_artwork(raw: dict[str, Any], config: dict[str, Any] | None = None) -> Artwork:
