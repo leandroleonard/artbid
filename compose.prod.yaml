@@ -1,0 +1,135 @@
+name: artbid-prod
+
+#   docker compose -f compose.prod.yaml up -d --build
+#   docker compose -f compose.prod.yaml logs -f bootstrap
+
+x-api-environment: &api-environment
+  DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-artbid}:${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-artbid}
+  REDIS_URL: redis://redis:6379/0
+  CELERY_BROKER_URL: redis://redis:6379/1
+  CELERY_RESULT_BACKEND: redis://redis:6379/2
+  APP_ENV: production
+  DEBUG: "false"
+  CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-}
+  TRUST_PROXY_HEADERS: "true"
+  AUDIT_ALIAS_SECRET: ${AUDIT_ALIAS_SECRET:?defina AUDIT_ALIAS_SECRET com 32+ caracteres}
+  AUDIT_CHECKPOINT_PRIVATE_KEY: ${AUDIT_CHECKPOINT_PRIVATE_KEY:-}
+  AUDIT_CHECKPOINT_PUBLIC_KEY: ${AUDIT_CHECKPOINT_PUBLIC_KEY:-}
+  AUDIT_CHECKPOINT_KEY_ID: ${AUDIT_CHECKPOINT_KEY_ID:-prod-key-1}
+  AUDIT_CHECKPOINT_EXPORT_DIR: /app/exports
+  AIC_CONTACT_EMAIL: ${AIC_CONTACT_EMAIL:-}
+  SEED_ON_START: ${SEED_ON_START:-true}
+
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-artbid}
+      POSTGRES_USER: ${POSTGRES_USER:-artbid}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+    restart: unless-stopped
+
+  bootstrap:
+    build:
+      context: ./apps/api
+    command: ["python", "-m", "scripts.bootstrap"]
+    environment: *api-environment
+    volumes:
+      - audit_exports:/app/exports
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    build:
+      context: ./apps/api
+    environment: *api-environment
+    volumes:
+      - audit_exports:/app/exports
+    depends_on:
+      bootstrap:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://127.0.0.1:8000/health',timeout=3)"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  celery-worker:
+    build:
+      context: ./apps/api
+    environment: *api-environment
+    command: ["celery", "-A", "app.tasks.celery_app", "worker", "--loglevel=info"]
+    volumes:
+      - audit_exports:/app/exports
+    depends_on:
+      bootstrap:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  celery-beat:
+    build:
+      context: ./apps/api
+    environment: *api-environment
+    command:
+      - celery
+      - -A
+      - app.tasks.celery_app:celery_app
+      - beat
+      - --loglevel=info
+      - --schedule=/tmp/celerybeat-schedule
+    volumes:
+      - audit_exports:/app/exports
+    depends_on:
+      bootstrap:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./apps/web
+      args:
+        NEXT_PUBLIC_LOT_POLL_INTERVAL_MS: ${NEXT_PUBLIC_LOT_POLL_INTERVAL_MS:-15000}
+    environment:
+      API_BASE_URL: http://api:8000
+      API_TIMEOUT_MS: ${API_TIMEOUT_MS:-10000}
+      NEXT_PUBLIC_LOT_POLL_INTERVAL_MS: ${NEXT_PUBLIC_LOT_POLL_INTERVAL_MS:-15000}
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+  audit_exports:
+  caddy_data:
+  caddy_config:
